@@ -36,7 +36,18 @@ object MyModule {
 
   // Exercise 1: Write a function to compute the nth fibonacci number
 
-  def fib(n: Int): Int = ???
+  import scala.annotation.tailrec
+
+  def fib(n: Int): Int = {
+    @tailrec
+    def loop(n: Int, acc: List[Int]): Int = {
+      n match {
+        case 0 => acc.head
+        case _ => if (acc.size > n) acc.last else loop(n, acc :+ acc.takeRight(2).sum)
+      }
+    }
+    loop(n, List(0, 1))
+  }
 
   // This definition and `formatAbs` are very similar..
   private def formatFactorial(n: Int) = {
@@ -140,7 +151,16 @@ object PolymorphicFunctions {
 
   // Exercise 2: Implement a polymorphic function to check whether
   // an `Array[A]` is sorted
-  def isSorted[A](as: Array[A], gt: (A,A) => Boolean): Boolean = ???
+  def isSorted[A](as: Array[A], gt: (A,A) => Boolean): Boolean = {
+    def loop(acc: Seq[Boolean], as: Array[A], ordered: (A,A) => Boolean): Seq[Boolean] = {
+      as.length match {
+        case x if x > 1 => loop(acc :+ ordered(as.head, as(1)), as.tail, ordered)
+        case _ => acc
+      }
+    }
+
+    loop(Nil, as, gt) forall (x => x)
+  }
 
   // Polymorphic functions are often so constrained by their type
   // that they only have one implementation! Here's an example:
@@ -153,13 +173,13 @@ object PolymorphicFunctions {
   // Note that `=>` associates to the right, so we could
   // write the return type as `A => B => C`
   def curry[A,B,C](f: (A, B) => C): A => (B => C) =
-    ???
+    a => partial1(a, f)
 
   // NB: The `Function2` trait has a `curried` method already
 
   // Exercise 4: Implement `uncurry`
   def uncurry[A,B,C](f: A => B => C): (A, B) => C =
-    ???
+    (a, b) => f(a)(b)
 
   /*
   NB: There is a method on the `Function` object in the standard library,
@@ -174,5 +194,5 @@ object PolymorphicFunctions {
   // Exercise 5: Implement `compose`
 
   def compose[A,B,C](f: B => C, g: A => B): A => C =
-    ???
+    a => f(g(a))
 }

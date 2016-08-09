@@ -71,9 +71,15 @@ object List { // `List` companion object. Contains functions for creating and wo
     case _ => l
   }
 
-  def init[A](l: List[A]): List[A] = sys.error("todo")
+  def init[A](l: List[A]): List[A] = l match {
+    case Nil => l
+    case Cons(x, xs) => Cons(x, init(xs))
+  }
 
-  def length[A](l: List[A]): Int = sys.error("todo")
+  def length[A](l: List[A]): Int = l match {
+    case Nil => 0
+    case Cons(x, xs) => List.foldRight(xs, 1)((_, acc) => acc + 1)
+  }
 
   def foldLeft[A,B](l: List[A], z: B)(f: (B, A) => B): B = sys.error("todo")
 

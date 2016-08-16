@@ -105,5 +105,15 @@ object List { // `List` companion object. Contains functions for creating and wo
 
   def concatListOfLists[A](ls: List[List[A]]): List[A] = foldRight(ls, List[A]())((a, b) => append(a, b))
 
-  def map[A,B](l: List[A])(f: A => B): List[B] = sys.error("todo")
+  def mapPlusOne(ns: List[Int]): List[Int] =
+    foldRight(ns, List[Int]())((a, b) => Cons(a+1, b))
+
+  def mapDouble2String(ns: List[Double]): List[String] =
+    foldRight(ns, List[String]())((a, b) => Cons(a.toString, b))
+
+  def map[A,B](l: List[A])(f: A => B): List[B] =
+    foldRight(l, List[B]())((a, b) => Cons(f(a), b))
+
+  def filter[A](as: List[A])(f: A => Boolean): List[A] =
+    foldRight(as, List[A]())((a, b) => if (f(a)) Cons(a, b) else b)
 }

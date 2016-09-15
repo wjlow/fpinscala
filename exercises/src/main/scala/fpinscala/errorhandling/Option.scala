@@ -90,5 +90,30 @@ object Option {
   def sequence2[A](a: List[Option[A]]): Option[List[A]] =
     a.foldRight[Option[List[A]]](Some(Nil))(map2(_, _)(_ :: _))
 
-  def traverse[A, B](a: List[A])(f: A => Option[B]): Option[List[B]] = sys.error("todo")
+  def traverse[A, B](a: List[A])(f: A => Option[B]): Option[List[B]] = {
+    def loop[A, B](acc: Option[List[B]])(a: List[A])(f: A => Option[B]): Option[List[B]] = a match {
+      case Nil => acc
+      case (h::t) if f(h) != None =>
+        val newAcc: Option[List[B]] = acc flatMap (acc2 => f(h) map (acc2 :+ _))
+        loop(newAcc)(t)(f)
+      case _ => None
+    }
+    loop(Some(Nil))(a)(f)
+  }
+
+  def traverse2[A, B](a: List[A])(f: A => Option[B]): Option[List[B]] = a match {
+    case Nil => Some(Nil)
+    case h :: t => map2(f(h), traverse2(t)(f))(_ :: _)
+  }
+
+  def traverse3[A, B](a: List[A])(f: A => Option[B]): Option[List[B]] = a match {
+    case Nil => Some(Nil)
+    case h :: t => for {
+      fh <- f(h)
+      tr <- traverse3(t)(f)
+    } yield fh :: tr
+  }
+
+  def sequenceWithTraverse[A](a: List[Option[A]]): Option[List[A]] =
+    traverse3(a)(aa => aa)
 }

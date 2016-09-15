@@ -23,14 +23,14 @@ sealed trait Option[+A] {
 
   def orElse[B>:A](ob: => Option[B]): Option[B] = this match {
     case None => ob
-    case Some(a) => Some(a)
+    case _ => this
   }
 
   def orElse2[B>:A](ob: => Option[B]): Option[B] = map (Some(_)) getOrElse ob
 
   def filter(f: A => Boolean): Option[A] = this match {
-    case None => None
-    case Some(a) => if (f(a)) Some(a) else None
+    case Some(a) if (f(a)) => this
+    case _ => None
   }
 
 }
@@ -80,7 +80,15 @@ object Option {
 
   def lift[A,B](f: A => B): Option[A] => Option[B] = _ map f
 
-  def sequence[A](a: List[Option[A]]): Option[List[A]] = sys.error("todo")
+  def sequence[A](a: List[Option[A]]): Option[List[A]] =
+    a.foldRight[Option[List[A]]](Some(Nil))((optA, optBs) => (optA, optBs) match {
+      case (None, _) => None
+      case (_, None) => None
+      case (Some(aa), Some(bs: List[A])) => Some(bs :+ aa)
+    })
+
+  def sequence2[A](a: List[Option[A]]): Option[List[A]] =
+    a.foldRight[Option[List[A]]](Some(Nil))(map2(_, _)(_ :: _))
 
   def traverse[A, B](a: List[A])(f: A => Option[B]): Option[List[B]] = sys.error("todo")
 }
